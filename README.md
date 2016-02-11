@@ -1,3 +1,10 @@
+## Fork
+
+This is a fork pureley for keeping a consistant version of the code with
+a slightly borked build file for my own use. If you are not me you
+probably want the main branch.
+
+
 # LibVMMC
 
 <p>Copyright &copy; 2015 <a href="http://lesterhedges.net">Lester Hedges</a>
