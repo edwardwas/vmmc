@@ -246,7 +246,7 @@ $(demos): %: %.cpp $(demo_library_header) $(library) $(demo_library) $(demo_obje
 # Build documentation using Doxygen.
 doc: $(headers) $(vmmc_headers) $(dox_files)
 	$(call colorecho, 4, "--> Generating CXX source documentation with Doxygen")
-	doxygen dox/Doxyfile
+	#doxygen dox/Doxyfile
 
 # Install the library and demos.
 .PHONY: install
@@ -261,7 +261,7 @@ install: build
 	$(install_cmd) $(iflags) $(library) $(PREFIX)/lib
 	$(install_cmd) $(iflags) $(library_header) $(PREFIX)/include/$(project)
 	$(install_cmd) $(iflags_exec) $(demos) $(PREFIX)/share/$(project)-demos
-	cp -r doc/html $(PREFIX)/share/doc/$(project)
+#	cp -r doc/html $(PREFIX)/share/doc/$(project)
 
 # Uninstall the library and demos.
 .PHONY: uninstall
