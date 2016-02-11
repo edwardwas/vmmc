@@ -250,7 +250,7 @@ doc: $(headers) $(vmmc_headers) $(dox_files)
 
 # Install the library and demos.
 .PHONY: install
-install: build doc
+install: build 
 	$(call colorecho, 3, "--> Installing CXX static library $(library) to $(PREFIX)/lib")
 	$(call colorecho, 3, "--> Installing CXX demos $(demos) to $(PREFIX)/share/$(project)-demos")
 	$(call colorecho, 3, "--> Installing CXX Doxygen documentation to $(PREFIX)/share/doc/$(project)")
