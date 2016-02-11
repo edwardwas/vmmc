@@ -253,15 +253,11 @@ doc: $(headers) $(vmmc_headers) $(dox_files)
 install: build 
 	$(call colorecho, 3, "--> Installing CXX static library $(library) to $(PREFIX)/lib")
 	$(call colorecho, 3, "--> Installing CXX demos $(demos) to $(PREFIX)/share/$(project)-demos")
-	$(call colorecho, 3, "--> Installing CXX Doxygen documentation to $(PREFIX)/share/doc/$(project)")
 	$(install_cmd) -d $(iflags_exec) $(PREFIX)/lib
 	$(install_cmd) -d $(iflags_exec) $(PREFIX)/include/$(project)
 	$(install_cmd) -d $(iflags_exec) $(PREFIX)/share/$(project)-demos
 	$(install_cmd) -d $(iflags_exec) $(PREFIX)/share/doc/$(project)
-	$(install_cmd) $(iflags) $(library) $(PREFIX)/lib
 	$(install_cmd) $(iflags) $(library_header) $(PREFIX)/include/$(project)
-	$(install_cmd) $(iflags_exec) $(demos) $(PREFIX)/share/$(project)-demos
-	cp -r doc/html $(PREFIX)/share/doc/$(project)
 
 # Uninstall the library and demos.
 .PHONY: uninstall
