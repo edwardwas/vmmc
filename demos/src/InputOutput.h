@@ -90,6 +90,17 @@ public:
             The size of the simulation box in each dimension.
      */
     void vmdSpherocylinder(const std::vector<double>&);
+
+    void writeOwnConfig(const std::string fileName
+            , const std::vector<double>
+            , const double boxSize
+            , const double sameEnergy
+            , const double differentEnergy
+            , const double patchDiameter
+            , const int numParts
+            , const int writeRate
+            , const int numSweeps
+            );
 };
 
 #endif  /* _INPUTOUTPUT_H */

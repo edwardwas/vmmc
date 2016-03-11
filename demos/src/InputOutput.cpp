@@ -256,3 +256,13 @@ void InputOutput::vmdSpherocylinder(const std::vector<double>& boxSize)
 
     fclose(pFile);
 }
+void writeOwnConfig(const std::string
+        , const std::vector<double>
+        , const double boxSize
+        , const double sameEnergy
+        , const double differentEnergy
+        , const double patchDiameter
+        , const int numParts
+        , const int writeRate
+        , const int numSweeps
+        );

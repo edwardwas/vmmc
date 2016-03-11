@@ -22,16 +22,64 @@
 #include "Demo.h"
 #include "VMMC.h"
 
+void writeStartOptions( const std::string fileName
+        , const double boxSize
+        , const double energy
+        , const double patchDiameter
+        , const int numParts
+        , const int writeRate 
+        , const int numSweeps){
+    std::ofstream fileStream;
+    fileStream.open(fileName,std::ios::trunc);
+    fileStream << "{\n";
+
+    fileStream << "theta = ["
+        << 0 << ","
+        << 0.5*M_PI << ","
+        << M_PI << ","
+        << 1.5*M_PI << "]\n";
+    fileStream << "boxSize = " << boxSize << "\n";
+    fileStream << "sameEnergy = " << energy << "\n";
+    fileStream << "differentEnergy = " << energy << "\n";
+    fileStream << "patchDiameter = " << patchDiameter << "\n";
+    fileStream << "particleDiameter = " << 1 << "\n";
+    fileStream << "numParts = " << numParts << "\n";
+    fileStream << "fileName = \"" << fileName << "\"\n";
+    fileStream << "writeRate = " << writeRate << "\n";
+    fileStream << "numSweeps = " << numSweeps << "\n";
+    fileStream << "singleMoveMonteCarlo = " << false << "\n";
+    fileStream << "}\n";
+    fileStream.close();
+}
+
+void writeFrame(const std::string fileName, const std::vector<Particle> parts){
+    std::ofstream fileStream;
+    fileStream.open(fileName,std::ios::app);
+
+    fileStream << parts.size() << "\n\n";
+    for (int i = 0; i < parts.size(); i++){
+        fileStream << parts[i].position[0] << " ";
+        fileStream << parts[i].position[1] << " ";
+        fileStream << parts[i].orientation[0] << " ";
+        fileStream << parts[i].orientation[1] << " ";
+        fileStream << "Red Blue Red Blue\n";
+    }
+    fileStream << "\n";
+}
+
 int main(int argc, char** argv)
 {
+    int crystalSize = 9;
     // Simulation parameters.
     unsigned int dimension = 2;                     // dimension of simulation box
-    unsigned int nParticles = 1000;                 // number of particles
-    double interactionEnergy = 8.0;                 // pair interaction energy scale (in units of kBT)
-    double interactionRange = 0.1;                  // diameter of patch (in units of particle diameter)
-    double density = 0.2;                           // particle density
-    double baseLength;                              // base length of simulation box
-    unsigned int maxInteractions = 3;               // maximum number of interactions per particle (number of patches)
+    unsigned int nParticles = crystalSize*crystalSize;                 // number of particles
+    double interactionEnergy = 3.0;                 // pair interaction energy scale (in units of kBT)
+    double interactionRange = 0.15;                  // diameter of patch (in units of particle diameter)
+    double baseLength = 21;                              // base length of simulation box
+    unsigned int maxInteractions = 4;               // maximum number of interactions per particle (number of patches)
+
+    const int numSweeps = 5e4;
+    const int writeRate = numSweeps / 100;
 
     // Data structures.
     std::vector<Particle> particles(nParticles);    // particle container
@@ -42,8 +90,8 @@ int main(int argc, char** argv)
     particles.resize(nParticles);
 
     // Work out base length of simulation box (particle diameter is one).
-    if (dimension == 2) baseLength = std::pow((nParticles*M_PI)/(2.0*density), 1.0/2.0);
-    else baseLength = std::pow((nParticles*M_PI)/(6.0*density), 1.0/3.0);
+    //if (dimension == 2) baseLength = std::pow((nParticles*M_PI)/(2.0*density), 1.0/2.0);
+    //else baseLength = std::pow((nParticles*M_PI)/(6.0*density), 1.0/3.0);
 
     std::vector<double> boxSize;
     for (unsigned int i=0;i<dimension;i++)
@@ -51,12 +99,6 @@ int main(int argc, char** argv)
 
     // Initialise simulation box object.
     Box box(boxSize);
-
-    // Initialise input/output class,
-    InputOutput io;
-
-    // Create VMD script.
-    io.vmdScript(boxSize);
 
     // Initialise cell list.
     cells.setDimension(dimension);
@@ -74,6 +116,24 @@ int main(int argc, char** argv)
 
     // Generate a random particle configuration.
     initialise.random(particles, cells, box, rng, false);
+    cells.reset();
+
+    int i = 0;
+    double deltaX = 1 + 0.5*interactionRange;
+    double startX = 0.5 * (baseLength - crystalSize * deltaX);
+    for (int x = 0; x < crystalSize; x ++){
+        for (int y = 0; y < crystalSize; y++){
+            std::cout << particles[i].cell << "-";
+            particles[i].position[0] = startX + x * deltaX;
+            particles[i].position[1] = startX + y * deltaX;
+            particles[i].orientation[0] = 1;
+            particles[i].orientation[1] = 0;
+            particles[i].cell = cells.getCell(particles[i]);
+            cells.initCell(particles[i].cell, particles[i]);
+            std::cout << particles[i].cell << "\n";
+            i++;
+        }
+    }
 
     // Initialise data structures needed by the VMMC class.
     double coordinates[dimension*nParticles];
@@ -119,18 +179,18 @@ int main(int argc, char** argv)
     vmmc::VMMC vmmc(nParticles, dimension, coordinates, orientations,
         0.15, 0.2, 0.5, 0.5, maxInteractions, &boxSize[0], isIsotropic, false, callbacks);
 
+    std::cout << "Writing start options\n";
+    writeStartOptions("out.txt",baseLength,interactionEnergy,interactionRange,nParticles,writeRate,numSweeps);
+    std::cout << "Start options writen\n";
+
+
     // Execute the simulation.
-    for (unsigned int i=0;i<1000;i++)
+    for (unsigned int i=0;i<numSweeps/writeRate;i++)
     {
-        // Increment simulation by 1000 Monte Carlo Sweeps.
-        vmmc += 1000*nParticles;
+        vmmc += writeRate*nParticles;
+        writeFrame("out.txt",particles);
 
-        // Append particle coordinates to an xyz trajectory.
-        if (i == 0) io.appendXyzTrajectory(dimension, particles, true);
-        else io.appendXyzTrajectory(dimension, particles, false);
-
-        // Report.
-        printf("sweeps = %9.4e, energy = %5.4f\n", ((double) (i+1)*1000), patchyDisc.getEnergy());
+        std::cout << "After " << (100.0 * double(i*writeRate) / double(numSweeps)) << "% complete, the energy is " << patchyDisc.getEnergy() << "\n";
     }
 
     std::cout << "\nComplete!\n";
