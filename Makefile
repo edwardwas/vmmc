@@ -246,7 +246,7 @@ $(demos): %: %.cpp $(demo_library_header) $(library) $(demo_library) $(demo_obje
 # Build documentation using Doxygen.
 doc: $(headers) $(vmmc_headers) $(dox_files)
 	$(call colorecho, 4, "--> Generating CXX source documentation with Doxygen")
-	#doxygen dox/Doxyfile
+	doxygen dox/Doxyfile
 
 # Install the library and demos.
 .PHONY: install
